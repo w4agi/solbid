@@ -5,7 +5,7 @@ import { Providers } from "@/components/provider";
 import { Toaster } from "react-hot-toast";
 import Appbar from "@/components/Appbar";
  
- 
+
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
   variable: "--font-geist-sans",
