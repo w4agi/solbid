@@ -1,0 +1,29 @@
+{
+  "name": "ws",
+  "version": "1.0.0",
+  "description": "",
+  "main": "app.ts",
+  "scripts": {
+    "preinstall": "npx only-allow pnpm",
+    "dev": "nodemon src/app.ts",
+    "start": "node dist/app.js",
+    "build": "pnpm postinstall && npx tsc -b"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@types/ws": "^8.5.12",
+    "bullmq": "^5.20.0",
+    "dotenv": "^16.4.5",
+    "jsonwebtoken": "^9.0.2",
+    "nodemon": "^3.1.7",
+    "redis": "^4.7.0",
+    "ts-node": "^10.9.2",
+    "typescipt": "^1.0.0",
+    "ws": "^8.18.0"
+  },
+  "devDependencies": {
+    "@types/jsonwebtoken": "^9.0.7"
+  }
+}
