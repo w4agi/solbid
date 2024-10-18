@@ -46,7 +46,7 @@ pub fn place_bid(
 
   let current_time = Clock::get()?.unix_timestamp as u64;
 
-  if current_time - game_state.last_bid_time > 300 {
+  if current_time - game_state.last_bid_time > 600 {
     return end_game(program_id, game_state.game_id, accounts, &mut game_state);
   }
 
