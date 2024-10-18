@@ -3,11 +3,16 @@
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Button } from "@/components/ui/button"
-import { Menu, X } from 'lucide-react'
+import {  Menu, X } from 'lucide-react'
 import { useRouter} from 'next/navigation'
 import { signOut, useSession } from 'next-auth/react'
 import { WalletMultiButton } from '@solana/wallet-adapter-react-ui'
 import WalletBalance from './WalletBalance'
+import { CiLogout } from "react-icons/ci";
+import Link from 'next/link'
+import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar'
+import "../../styles/wallet.css"
+
 
 export default function Appbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
@@ -23,13 +28,13 @@ export default function Appbar() {
     }
   }, [])
 
-  const navbarBackground = scrollY > 20 ? "bg-slate-900/90 backdrop-blur-md" : " bg-slate-800/50"
+  const navbarBackground = scrollY > 20 ? "bg-slate-900/90 backdrop-blur-md" : " bg-slate-900/30"
 
   return (
     <header className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${navbarBackground}`}>
-      <nav className="container mx-auto px-4 sm:px-12 py-2 flex justify-between items-center">
+      <nav className="container w-full md:w-6/12 mx-auto  py-3 flex justify-between items-center">
         <motion.div 
-          className="text-2xl font-bold bg-clip-text cursor-pointer text-transparent bg-gradient-to-r from-yellow-400 to-orange-500"
+          className="text-2xl   font-bold font-serif bg-clip-text cursor-pointer text-transparent text-white"
           initial={{ opacity: 0, x: -20 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.5 }}
@@ -51,33 +56,51 @@ export default function Appbar() {
               exit={{ opacity: 0, y: -20 }}
               transition={{ duration: 0.3 }}
             >
-            <Button onClick={() => router.push("/home")} className="w-full md:w-auto mt-2 md:mt-0 bg-gradient-to-r from-yellow-400 to-orange-500 text-slate-900 hover:from-yellow-500 hover:to-orange-600 transition-all duration-300">
-                  Home
-            </Button>
             {session.data?.user ? (
-              <li className='flex gap-2'>
+              <li className='flex flex-col md:flex-row gap-8 items-center'>
+                <Link href={"/home"}
+                 className='block py-2 px-3 text-lg text-white   rounded hover:bg-gray-100 
+                 md:hover:bg-transparent md:border-0 md:hover:text-blue-700 md:p-0 dark:text-white
+                  md:dark:hover:text-blue-500 dark:hover:bg-gray-700 dark:hover:text-white md:dark:hover:bg-transparent'>
+                Games
+                </Link>
                 <WalletBalance/>
-                <Button onClick={() =>
+                <WalletMultiButton  className="wallet-button"/>
+                <div className='flex items-center justify-center'>
+                <CiLogout size={32} 
+                className='text-white rotate-90 font-semibold cursor-pointer'
+                onClick={() =>
                     signOut({
                       callbackUrl: "/",
                     })
-                  } variant="outline" className="w-full md:w-auto mt-2 md:mt-0 border-yellow-400 text-yellow-400 hover:bg-yellow-400 hover:text-slate-900 transition-all duration-300">
-                  Logout
-                </Button>
-                <WalletMultiButton/>
+                  }>
+                </CiLogout>
+                </div>
+                <Link href={"/dashboard"}>
+                <Avatar>
+                  <AvatarImage src="dddd" alt="@shadcn" />
+                  <AvatarFallback >{session?.data.user.name?.charAt(0)}</AvatarFallback>
+                </Avatar>
+                </Link>
               </li>
             ) : (
               <>
-                <li>
-                  <Button onClick={() => router.push("/?modal=login")} variant="outline" className="w-full md:w-auto mt-2 md:mt-0 border-yellow-400 text-yellow-400 hover:bg-yellow-400 hover:text-slate-900 transition-all duration-300">
+          
+                  <Link  href='/?modal=login'  
+                 className='block py-2 px-3 text-lg text-white font-serif rounded hover:bg-gray-100 
+                 md:hover:bg-transparent md:border-0 md:hover:text-blue-700 md:p-0 dark:text-white
+                  md:dark:hover:text-blue-500 dark:hover:bg-gray-700 dark:hover:text-white md:dark:hover:bg-transparent' >
                     Login
-                  </Button>
-                </li>
-                <li>
-                  <Button onClick={() => router.push("/?modal=signup")} className="w-full md:w-auto mt-2 md:mt-0 bg-gradient-to-r from-yellow-400 to-orange-500 text-slate-900 hover:from-yellow-500 hover:to-orange-600 transition-all duration-300">
-                    Sign Up
-                  </Button>
-                </li>
+                  </Link>
+              
+               
+                  <Link  href='/?modal=signup' 
+                  className='block py-2 px-3 text-lg text-white   font-serif rounded hover:bg-gray-100 
+                  md:hover:bg-transparent md:border-0 md:hover:text-blue-700 md:p-0 dark:text-white
+                   md:dark:hover:text-blue-500 dark:hover:bg-gray-700 dark:hover:text-white md:dark:hover:bg-transparent' >
+                    Signup
+                  </Link>
+              
               </>
             )}
             </motion.ul>

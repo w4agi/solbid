@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 import { useRouter } from "next/navigation"
-import { signIn } from "next-auth/react"
+import { getSession, signIn, useSession} from "next-auth/react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -18,6 +18,8 @@ import toast from "react-hot-toast"
 import { FcGoogle } from "react-icons/fc"
 import Link from "next/link"
 import { loginSchema, LoginFormData, validateForm } from "@/schema/credentials-schema"
+import { useSocket } from "@/context/socket-context"
+ 
 
 export default function LoginModal() {
   const [isOpen, setIsOpen] = useState(true)
@@ -29,6 +31,7 @@ export default function LoginModal() {
   })
   const [errors, setErrors] = useState<Partial<LoginFormData>>({})
   const router = useRouter()
+  const { setUser } = useSocket()
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target
@@ -61,6 +64,8 @@ export default function LoginModal() {
         }
       } else {
         toast.success("Login Successful")
+        const session = await getSession();
+        setUser(session?.user || null);
         router.push('/home')
       }
     } catch{
@@ -74,6 +79,8 @@ export default function LoginModal() {
     setIsLoadingGoogle(true)
     try {
       await signIn("google", { callbackUrl: '/home' })
+      const session = await getSession();
+      setUser(session?.user || null);
     } catch{
       toast.error("Login Failed")
     } finally {

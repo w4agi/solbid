@@ -4,8 +4,9 @@ import { useState, useEffect } from 'react'
 import { LAMPORTS_PER_SOL } from '@solana/web3.js'
 import { useWallet } from '@solana/wallet-adapter-react'
 import { Button } from "@/components/ui/button"
-import { Wallet } from "lucide-react"
-import { CONNECTION } from '@/lib/helper'
+import { Wallet } from "lucide-react" 
+import { CONNECTION } from '@/lib/constant'
+ 
 
 export default function WalletBalance() {
   const { publicKey, connected } = useWallet()
@@ -30,13 +31,11 @@ export default function WalletBalance() {
   }, [publicKey, connected])
 
   return connected && (
-    <Button
-      variant="outline"
-      size="sm"
-      className="bg-background text-foreground hover:bg-background/90 cursor-default"
+    <div
+      className="border border-slate-700 rounded-md flex gap-2 items-center justify-center p-3"
     >
-      <Wallet className="mr-2 h-4 w-4" />
-      {balance?.toFixed(2)} SOL  
-    </Button>
+      <Wallet className="mr-2 text-green-400" size={24}/>
+      <span>{balance?.toFixed(2)} SOL</span>  
+    </div>
   )
 }

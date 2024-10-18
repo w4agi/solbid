@@ -1,149 +1,158 @@
-"use client"
-import { motion } from 'framer-motion'
-import { Button } from "@/components/ui/button"
-import { Sparkles, Zap, Crown, ChevronRight, Shield, Coins } from 'lucide-react'
-import { Suspense } from 'react'
-import { LandingPageSkeleton } from './skelton/landing-page-skelton'
+'use client'
+
+import React, { useEffect } from 'react'
+import { ArrowRight, GitBranch, Router, Twitter } from 'lucide-react'
+import { Sparkles, Zap, Crown, Shield, Coins } from 'lucide-react'
+import { Button } from '@/components/ui/button'
+import { FaGithub } from "react-icons/fa"
+import { BsTwitterX } from "react-icons/bs"
+import Link from 'next/link'
+import { motion, useAnimation, useScroll } from 'framer-motion'
 
 export default function LandingPage() {
+  const controls = useAnimation()
+  const { scrollY } = useScroll()
+ 
+
+  useEffect(() => {
+    const unsubscribe = scrollY.onChange((latest) => {
+      if (latest > 100) {
+        controls.start('visible')
+      } else {
+        controls.start('hidden')
+      }
+    })
+
+    return () => unsubscribe()
+  }, [controls, scrollY])
+
+  const containerVariants = {
+    hidden: { opacity: 0, y: 20 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: {
+        delayChildren: 0.3,
+        staggerChildren: 0.2
+      }
+    }
+  }
+
+  const itemVariants = {
+    hidden: { y: 20, opacity: 0 },
+    visible: {
+      y: 0,
+      opacity: 1
+    }
+  }
 
   return (
-  <Suspense fallback={<LandingPageSkeleton/>}>
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white overflow-hidden">
-      <div className="absolute inset-0 bg-[url('/grid.svg')] bg-center [mask-image:linear-gradient(180deg,white,rgba(255,255,255,0))]"></div>
-      <main className="relative z-10 container mx-auto px-4 py-24">
-        <div className="max-w-10/12 mx-auto backdrop-blur-md -mt-8 md:p-12">
-          <motion.section 
-            className="text-center mb-24"
-            initial="hidden"
-            animate="visible"
-            variants={{
-              hidden: { opacity: 0, y: 20 },
-              visible: { opacity: 1, y: 0, transition: { duration: 0.6, delay: 0.2 } }
-            }}
+    <motion.div
+      initial="hidden"
+      animate="visible"
+      variants={containerVariants}
+      className="flex justify-center bg-slate-800 mx-auto"
+    >
+      <section>
+        <div className="container font-serif">
+          <motion.div
+            variants={itemVariants}
+            className="flex flex-col w-full lg:w-6/12 items-center justify-center pt-32 text-center lg:mx-auto lg:items-start lg:px-0 lg:text-left"
           >
-            <h1 className="text-5xl md:text-7xl font-extrabold mb-6 bg-clip-text text-transparent bg-gradient-to-r from-yellow-400 via-orange-500 to-red-500 leading-tight">
-              Bid. Double. Dominate.
-            </h1>
-            <p className="text-xl md:text-2xl text-gray-300 mb-12 max-w-3xl mx-auto">
-              Enter the thrilling world of SolBid Royale, where strategic bidding leads to royal rewards on Solana.
-            </p>
-            <motion.div 
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-            >
-              <Button className="bg-gradient-to-r from-yellow-400 to-orange-500 text-slate-900 text-xl py-6 px-12 rounded-full hover:from-yellow-500 hover:to-orange-600 transition-all duration-300 shadow-lg shadow-orange-500/30">
-                Place Your Bid <ChevronRight className="ml-2 h-6 w-6" />
-              </Button>
-            </motion.div>
-          </motion.section>
-
-          <motion.section 
-            className="mb-24"
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true }}
-            variants={{
-              hidden: { opacity: 0, y: 20 },
-              visible: { opacity: 1, y: 0, transition: { duration: 0.6, delay: 0.4 } }
-            }}
-          >
-            <h2 className="text-4xl font-bold mb-8 text-yellow-400 text-center">About SolBid Royale</h2>
-            <div className="grid md:grid-cols-2 gap-12 items-center">
-              <div>
-                <p className="text-xl text-gray-300 mb-6">
-                  SolBid Royale is a high-stakes Solana-based game where players compete through strategic bidding. Double the previous bid, aim for safety, and reap royal rewards!
-                </p>
-                <div className="flex flex-col sm:flex-row justify-start space-y-4 sm:space-y-0 sm:space-x-6">
-                  <Button className="bg-gradient-to-r from-yellow-400 to-orange-500 text-slate-900 hover:from-yellow-500 hover:to-orange-600 transition-all duration-300 px-8 py-3 text-lg rounded-full shadow-lg shadow-orange-500/30">
-                    How to Play
-                  </Button>
-                  <Button variant="outline" className="border-2 border-yellow-400  bg-yellow-400 text-slate-900 transition-all duration-300 px-8 py-3 text-lg rounded-full">
-                    Watch Gameplay
-                  </Button>
+            <div className="container mx-auto px-4">
+              <div className="flex flex-col items-center text-center lg:flex-row lg:text-left">
+                <div className="lg:w-1/2">
+                  <h1 className="mb-6 text-4xl font-bold lg:text-6xl text-white">
+                    An Online, Competitive Bidding Game
+                  </h1>
+                  
+                  <Link href={"/?modal=signup"} className='text-white ml-2 border rounded-sm border-blue-600 py-2.5 px-5 
+                  hover:bg-blue-500
+                  bg-blue-600'>
+                  Sign up
+                  </Link>
+                  
+                </div>
+                <div className="mt-8 lg:mt-0 lg:w-1/2 lg:pl-12">
+                  <p className="text-lg text-gray-400 leading-8">
+                    Outbid your opponents in a fast-paced game that rewards early decisions and timely bids. 
+                    With unique royalty incentives for early participants, you're always balancing risk and rewards.
+                  </p>
                 </div>
               </div>
-              <div className="grid sm:grid-cols-2 gap-6">
-                {[
-                  { icon: Zap, title: "Dynamic Bidding", description: "Double the previous bid to stay in the game" },
-                  { icon: Shield, title: "Safety Threshold", description: "Become 'safe' after 5 subsequent bids" },
-                  { icon: Coins, title: "Royalty System", description: "Earn rewards even if you don't win" },
-                  { icon: Crown, title: "Winner Takes All", description: "Last bidder claims the grand prize" }
-                ].map((item, index) => (
-                  <motion.div 
-                    key={index}
-                    className="bg-gradient-to-br from-slate-700 to-slate-800 p-6 rounded-xl backdrop-blur-sm border border-yellow-500/20 hover:border-yellow-500/50 transition-all duration-300 transform hover:-translate-y-1 hover:shadow-lg hover:shadow-orange-500/20"
-                    whileHover={{ scale: 1.05 }}
-                  >
-                    <item.icon className="w-10 h-10 mb-4 text-yellow-400" />
-                    <h3 className="text-lg font-semibold mb-2 text-yellow-400">{item.title}</h3>
-                    <p className="text-gray-300 text-sm">{item.description}</p>
-                  </motion.div>
-                ))}
-              </div>
             </div>
-          </motion.section>
-
-          <motion.section 
-            className="grid md:grid-cols-3 gap-8 mb-24"
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true }}
-            variants={{
-              hidden: { opacity: 0, y: 20 },
-              visible: { opacity: 1, y: 0, transition: { duration: 0.6, delay: 0.6, staggerChildren: 0.2 } }
-            }}
+          </motion.div>
+          <motion.div
+            variants={containerVariants}
+            className='flex items-center justify-center mt-24 flex-wrap'
           >
-            {[
-              { icon: Sparkles, title: "24-Hour Thrill", description: "Game continues until 24 hours pass without a new bid, keeping the excitement alive." },
-              { icon: Zap, title: "Solana-Powered", description: "Lightning-fast transactions and low fees, powered by Solana blockchain technology." },
-              { icon: Crown, title: "Strategic Rewards", description: "Unique royalty system rewards early bidders, adding layers of security to early bidders." }
-            ].map((feature, index) => (
-              <motion.div 
-                key={index}
-                className="bg-gradient-to-br from-slate-700 to-slate-800 p-8 rounded-2xl backdrop-blur-sm border border-yellow-500/20 hover:border-yellow-500/50 transition-all duration-300 transform hover:-translate-y-2 hover:shadow-xl hover:shadow-orange-500/20"
-                variants={{
-                  hidden: { opacity: 0, y: 20 },
-                  visible: { opacity: 1, y: 0 }
-                }}
-              >
-                <feature.icon className="w-16 h-16 mb-6 text-yellow-400" />
-                <h3 className="text-2xl font-semibold mb-4 text-yellow-400">{feature.title}</h3>
-                <p className="text-gray-300 text-lg">{feature.description}</p>
+            <div className='border-r border-slate-700 flex flex-col'>   
+              <motion.div variants={itemVariants} className='border-b border-slate-700 p-12'>
+                <section className="bg-gradient-to-br from-slate-700 to-slate-800 p-6 rounded-xl backdrop-blur-sm border border-yellow-500/20 hover:border-slate-500/50 transition-all 
+                  duration-300 transform hover:-translate-y-1 hover:shadow-lg hover:shadow-slate-500/20">
+                  <Crown className="w-10 h-10 mb-4 text-yellow-400" />
+                  <h3 className="text-lg font-semibold mb-2 text-yellow-400">Winner</h3>
+                  <p className="text-gray-400 text-sm">Winner claims the grand prize</p>
+                </section>
               </motion.div>
-            ))}
-          </motion.section>
-
-          <motion.section 
-            className="text-center mb-24"
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true }}
-            variants={{
-              hidden: { opacity: 0, y: 20 },
-              visible: { opacity: 1, y: 0, transition: { duration: 0.6, delay: 0.8 } }
-            }}
-          >
-            <h2 className="text-4xl font-bold mb-6 text-yellow-400">Ready to Bid?</h2>
-            <p className="text-xl text-gray-300 mb-8 max-w-2xl mx-auto">
-              Join SolBid Royale now and start your journey to the crown!
-            </p>
-            <div className="flex flex-col sm:flex-row justify-center space-y-4 sm:space-y-0 sm:space-x-6">
-              <Button className="bg-gradient-to-r from-yellow-400 to-orange-500 text-slate-900 hover:from-yellow-500 hover:to-orange-600 transition-all duration-300 px-12 py-4 text-xl rounded-full shadow-lg shadow-orange-500/30">
-                Start Bidding
-              </Button>
-              <Button variant="outline" className="border-2 border-yellow-400 text-yellow-400 hover:bg-yellow-400 hover:text-slate-900 transition-all duration-300 px-12 py-4 text-xl rounded-full">
-                Learn Strategy
-              </Button>
+              <motion.div variants={itemVariants} className='p-12'>
+                <section className="bg-gradient-to-br from-slate-700 to-slate-800 p-6 rounded-xl backdrop-blur-sm border border-yellow-500/20 hover:border-slate-500/50 transition-all 
+                  duration-300 transform hover:-translate-y-1 hover:shadow-lg hover:shadow-slate-500/20">
+                  <Zap className="w-10 h-10 mb-4 text-yellow-400" />
+                  <h3 className="text-lg font-semibold mb-2 text-yellow-400">Dynamic Bidding</h3>
+                  <p className="text-gray-400 text-sm">Double the previous bid to enter in the game</p>
+                </section>
+              </motion.div>
             </div>
-          </motion.section>
+            <div className='flex flex-col'>
+              <motion.div variants={itemVariants} className='border-b border-slate-700 p-12'>
+                <section className="bg-gradient-to-br from-slate-700 to-slate-800 p-6 rounded-xl backdrop-blur-sm border border-yellow-500/20 hover:border-slate-500/50 transition-all 
+                  duration-300 transform hover:-translate-y-1 hover:shadow-lg hover:shadow-slate-500/20">
+                  <Coins className="w-10 h-10 mb-4 text-yellow-400" />
+                  <h3 className="text-lg font-semibold mb-2 text-yellow-400">Royalty System</h3>
+                  <p className="text-gray-400 text-sm">Earn rewards even if you don't win</p>
+                </section>
+              </motion.div>
+              <motion.div variants={itemVariants} className='p-12'>
+                <section className="bg-gradient-to-br from-slate-700 to-slate-800 p-6 rounded-xl backdrop-blur-sm border border-yellow-500/20 hover:border-slate-500/50 transition-all 
+                  duration-300 transform hover:-translate-y-1 hover:shadow-lg hover:shadow-slate-500/20">
+                  <Shield className="w-10 h-10 mb-4 text-yellow-400" />
+                  <h3 className="text-lg font-semibold mb-2 text-yellow-400">Safety Threshold</h3>
+                  <p className="text-gray-400 text-sm">Become 'safe' once 5 bids have been made</p>
+                </section>
+              </motion.div>
+            </div>
+          </motion.div>
+          <motion.div
+            variants={containerVariants}
+            className='flex flex-col items-center justify-center mb-24 mt-24'
+          >
+            <motion.p variants={itemVariants} className="mb-8 text-lg text-gray-400">
+              Will you claim victory or miss out on the final win?
+            </motion.p>
+            <motion.div variants={itemVariants} className="flex justify-center lg:justify-start">
+              <Link  href={"/home"} className="w-full sm:w-auto text-black items-center justify-center bg-white px-4 py-3 rounded-md flex">
+                Get Started <ArrowRight className="ml-2 h-4 w-4" />
+              </Link>
+            </motion.div>
+          </motion.div>
+          <motion.div
+            variants={containerVariants}
+            className='border-t p-8 gap-12 border-slate-600 flex items-center justify-center'
+          >
+            <motion.div variants={itemVariants}>
+              <Link href={"https://github.com/rahulwagh07/solbid"} target='_blank'>
+                <FaGithub size={24} className="text-white hover:text-yellow-400 transition-colors" />
+              </Link>
+            </motion.div>
+            <motion.div variants={itemVariants}>
+              <Link href={"https://x.com/_rahulwagh"} target='_blank'>
+                <BsTwitterX size={24} className="text-white hover:text-yellow-400 transition-colors" />
+              </Link>
+            </motion.div>
+          </motion.div>
         </div>
-      </main>
-
-      <footer className="relative z-10 container mx-auto px-4 py-8 text-center text-gray-400">
-        <p>&copy; 2024 SolBid Royale. All rights reserved.</p>
-      </footer>
-    </div>
-    </Suspense>
+      </section>
+    </motion.div>
   )
 }

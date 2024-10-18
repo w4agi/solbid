@@ -6,7 +6,6 @@ import { GameData } from '@/types/game'
 import axios from 'axios'
 import React, { Suspense, useEffect, useState } from 'react'
 
-
 function page({ params }: { params: { gameId: string } }) {
   const {gameId} = params
   const [gameData, setGameData] = useState<GameData | null>(null)

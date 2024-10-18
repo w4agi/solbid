@@ -4,8 +4,7 @@ import { Trophy, Award, Clock, CircleDollarSign, Users, RedoDot } from 'lucide-r
 
 export function LoadingSkeleton() {
   return (
-    <div className="container mx-auto w-11/12 p-4 min-h-screen text-slate-200">
-      <Skeleton className="h-12 w-3/4 mx-auto mb-6" />
+    <div className="container mx-auto w-11/12 p-4 mt-12 min-h-screen text-slate-200">
       
       <Card className="bg-slate-900 text-slate-200 border-2 border-slate-700 pb-16">
         <CardContent className="p-0">

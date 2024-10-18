@@ -5,8 +5,7 @@ import { Providers } from "@/components/provider";
 import { Toaster } from "react-hot-toast";
 import Appbar from "@/components/common/Appbar";
 import { Suspense } from "react";
-import { NavbarSkeleton } from "@/components/skelton/appbar-skeleton";
- 
+import "../styles/wallet.css"
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -47,7 +46,7 @@ export default function RootLayout({
           }}
           />
           
-          <Suspense fallback={<NavbarSkeleton/>}>
+          <Suspense fallback={<></>}>
           <Appbar/>
           </Suspense>
           {children} 

@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 import { useRouter } from "next/navigation"
-import { signIn } from "next-auth/react"
+import { getSession, signIn } from "next-auth/react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -19,6 +19,7 @@ import { FcGoogle } from "react-icons/fc"
 import Link from "next/link"
 import axios from "axios"
 import { signupSchema, SignupFormData, validateForm } from "@/schema/credentials-schema"
+import { useSocket } from "@/context/socket-context"
 
 export default function SignupModal() {
   const [isLoadingGoogle, setIsLoadingGoogle] = useState(false)
@@ -32,6 +33,7 @@ export default function SignupModal() {
   const [errors, setErrors] = useState<Partial<SignupFormData>>({})
   const [showOtpInput, setShowOtpInput] = useState(false)
   const router = useRouter()
+  const {setUser} = useSocket()
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target
@@ -99,6 +101,8 @@ export default function SignupModal() {
     setIsLoadingGoogle(true)
     try {
       await signIn("google", { callbackUrl: '/home' })
+      const session = await getSession();
+      setUser(session?.user || null);
     } catch {
       toast.error("Signup Failed")
     } finally {

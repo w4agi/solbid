@@ -11,7 +11,7 @@ export default function AuthModals() {
   const searchParams = useSearchParams();
   const modal = searchParams.get('modal');
  
-  if (status === "unauthenticated" && !modal) {
+  if (status === "authenticated") {
     router.push("/")
   }
 

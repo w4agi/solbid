@@ -1,10 +1,10 @@
-export type Bid = {
+export interface Bid {
   id: number;
   amount: number;
   timestamp: string;
 };
 
-export type Player = {
+export interface Player {
   id: number;
   totalBidAmount: number;
   safe: boolean;
@@ -13,12 +13,13 @@ export type Player = {
   role: string;
   bid: Bid | null;
   user: {
+    id: number,
     name: string;
     imageUrl: string | null;
   };
 };
 
-export type GameData = {
+export interface GameData {
   id: number;
   gameId: string;
   initialBidAmount: number;

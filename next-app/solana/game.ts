@@ -2,37 +2,16 @@ import {
   PublicKey,
   Transaction,
   TransactionInstruction,
-  SystemProgram,
+  SystemProgram
 } from '@solana/web3.js';
 import BN from 'bn.js';
 import { convertLamportsToUsdc, convertUsdcToLamports } from '@/lib/helper';
 import axios from 'axios';
-import { PROGRAM_ID, CONNECTION, PLATFROM_ACCOUNT } from '@/lib/constant';
+import { PROGRAM_ID, CONNECTION} from '@/lib/constant';
 import { getBidPda, getGamePda, getPlayerPda } from './pda';
 import { GameState, PlayerState } from './state';
 
-export const getGameData = async (gameId: number) => {
-  const gamePda = getGamePda(new BN(gameId));
-  const accountInfo = await CONNECTION.getAccountInfo(gamePda);
-  if (!accountInfo) {
-    throw new Error('Game account not found');
-  }
-  const gameState = GameState.deserialize(accountInfo.data);
-  return gameState;
-}
 
-export const getAllPlayersAndBids = async (gameId: number, playerPubKey: PublicKey, bidCount: number) => {
-  const playerPda = getPlayerPda(new BN(gameId), playerPubKey, new BN(bidCount));
-  const accountInfo = await CONNECTION.getAccountInfo(playerPda);
-  if (!accountInfo) {
-    throw new Error('Player account not found');
-  }
-  const playerState = PlayerState.deserialize(accountInfo.data);
-  console.log('Player data:', playerState);
-  return playerState;
-}
-
- 
 export const createGame = async (publicKey: PublicKey, gameId: number, bidAmount: number) => {
   const gameIdBuffer = Buffer.alloc(8);
   gameIdBuffer.writeBigUInt64LE(BigInt(gameId));
@@ -80,72 +59,26 @@ export const createGame = async (publicKey: PublicKey, gameId: number, bidAmount
   const totalCost = fees + initialBidLamports;
   return { transaction, latestBlockhash, totalCost, gamePda, playerPda, bidPda };
 }
- 
-export const placeBid = async (bidder: PublicKey, gameId: number, bidAmount: number, bidCount: number) => {
+
+
+export const getGameData = async (gameId: number) => {
   const gamePda = getGamePda(new BN(gameId));
-  const playerPda = getPlayerPda(new BN(gameId), bidder, new BN(bidCount));
-  const bidPda = getBidPda(new BN(gameId), new BN(bidCount));
-  const bidAmountLamports = convertUsdcToLamports(bidAmount);
-  const bidAmountLamportsBuffer = Buffer.alloc(8);
-  bidAmountLamportsBuffer.writeBigUInt64LE(BigInt(bidAmountLamports));
-  const bidCountBuffer = Buffer.alloc(8);
-  bidCountBuffer.writeBigUInt64LE(BigInt(bidCount));
-
-  const instructionData = Buffer.concat([
-    Buffer.from([1]), 
-    bidAmountLamportsBuffer,
-    bidCountBuffer
-  ]);
-  
-  const keys = [
-    { pubkey: SystemProgram.programId, isSigner: false, isWritable: false },
-    { pubkey: PLATFROM_ACCOUNT, isSigner: false, isWritable: true},
-    { pubkey: gamePda, isSigner: false, isWritable: true },
-    { pubkey: bidder, isSigner: true, isWritable: true },
-    { pubkey: bidPda, isSigner: false, isWritable: true },
-    { pubkey: playerPda, isSigner: false, isWritable: true },
-  ];
-
-  const res = await axios.get('/api/bid', {
-    params: {
-      id: gameId,
-    },
-  });
-   
-  const playersPda = res.data.playersPda;  
-  const bidsPda = res.data.bidsPda; 
-  const playersPubkeys = res.data.playersPubkey;
-
-  playersPda.forEach((player:string) => {
-    keys.push({ pubkey: new PublicKey(player), isSigner: false, isWritable: true });  
-  });
-
-  bidsPda.forEach((bid:string) => {
-    keys.push({ pubkey: new PublicKey(bid), isSigner: false, isWritable: true }); 
-  });
-
-  playersPubkeys.forEach((playerPubkey:string) => {
-    keys.push({ pubkey: new PublicKey(playerPubkey), isSigner: true, isWritable: true });  
-  });
-
-  const placeBidIx = new TransactionInstruction({
-    keys,
-    programId: PROGRAM_ID,
-    data: instructionData
-  });
-
-  const latestBlockhash = await CONNECTION.getLatestBlockhash('confirmed');
-  const transaction = new Transaction();
-  transaction.add(placeBidIx);
-  transaction.recentBlockhash = latestBlockhash.blockhash;
-  transaction.feePayer = bidder;
-
-  let fees = await transaction.getEstimatedFee(CONNECTION);
-  if (fees === null) {
-    fees = 50000000 
+  const accountInfo = await CONNECTION.getAccountInfo(gamePda);
+  if (!accountInfo) {
+    throw new Error('Game account not found');
   }
-  const totalCost = fees + bidAmount;
-  return { transaction, latestBlockhash, totalCost, playerPda, bidPda };
+  const gameState = GameState.deserialize(accountInfo.data);
+  return gameState;
+}
+
+export const getAllPlayersAndBids = async (gameId: number, playerPubKey: PublicKey, bidCount: number) => {
+  const playerPda = getPlayerPda(new BN(gameId), playerPubKey, new BN(bidCount));
+  const accountInfo = await CONNECTION.getAccountInfo(playerPda);
+  if (!accountInfo) {
+    throw new Error('Player account not found');
+  }
+  const playerState = PlayerState.deserialize(accountInfo.data);
+  return playerState;
 }
 
 export const getAllGames = async () => {
@@ -198,7 +131,7 @@ export const getAllPlayersAndBidsForGame = async (gameId: number) => {
           console.error(`Failed to deserialize account for PDA: ${playerPda}`);
         }
       } else {
-        console.error(`Account not found or empty for PDA: ${playerPda}`);
+        console.error(`Account not found PDA: ${playerPda}`);
       }
     }
     return playerStates;  

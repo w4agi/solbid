@@ -18,7 +18,7 @@ export const fetchCurrentGameId = async () => {
   try {
     const res = await axios.get('/api/gameid');
     const gameId = res.data.currGameId;
-    console.log(gameId)
+
     if (gameId) {
        return gameId; 
     } else {

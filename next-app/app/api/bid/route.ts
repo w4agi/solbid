@@ -68,14 +68,38 @@ export async function POST(req: Request) {
       },
     });
 
-    return NextResponse.json({ message: 'Game updated successfully', updatedGame }, { status: 200 });
+    const gameData = await prisma.game.findUnique({
+      where:{
+        id: updatedGame.id,
+      },
+      include: {
+        players: {
+          where:{
+            id: player.id
+          },
+          include: {
+            bid: true,   
+            user:{
+              omit: {
+                email: true,
+                password: true,
+                provider: true,
+              },
+            }
+          },
+        },
+      },
+      omit: {
+        platformFeePercent: true,
+      }
+    })
+
+    return NextResponse.json({ message: 'Game updated successfully', gameData }, { status: 200 });
   } catch (error) {
     console.error(error);
     return NextResponse.json({ message: 'Internal server error' }, { status: 500 });
   }
 }
-
- 
 
 export async function GET(req: Request) {
   const url = new URL(req.url);

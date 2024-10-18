@@ -1,13 +1,18 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import axios from 'axios'
 import { useRouter } from 'next/navigation'
-import { motion } from 'framer-motion'
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
+import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
 import { Skeleton } from "@/components/ui/skeleton"
 import { formatDistanceToNow } from 'date-fns'
-import CreateGameModal from './CreateGame'
+import { useSocket } from '@/context/socket-context'
+import CreateGame from './CreateGame'
+import jwt from 'jsonwebtoken'
+import { GameData } from '@/types/game'
+import { DollarSign } from 'lucide-react'
 
 interface Game {
   id: number
@@ -24,16 +29,71 @@ export default function AllGames() {
   const [games, setGames] = useState<Game[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const router = useRouter()
+  const { socket, sendMessage, connectionError, user, setUser } = useSocket()
+
+  const addOrUpdateGame = useCallback((newGame: Game) => {
+    setGames(prevGames => {
+      const existingGameIndex = prevGames.findIndex(game => game.gameId === newGame.gameId);
+      if (existingGameIndex !== -1) {
+        const updatedGames = [...prevGames];
+        updatedGames[existingGameIndex] = { ...updatedGames[existingGameIndex], ...newGame };
+        return updatedGames.sort((a, b) => new Date(b.lastBidTime).getTime() - new Date(a.lastBidTime).getTime());
+      } else {
+        return [newGame, ...prevGames].sort((a, b) => new Date(b.lastBidTime).getTime() - new Date(a.lastBidTime).getTime());
+      }
+    });
+  }, []);
 
   useEffect(() => {
-    fetchGames()
-  }, [])
+    if (user) {
+      fetchGames()
+      if (!user.token) {
+        const token = user.token || jwt.sign(
+          {
+            userId: user?.id,
+          },
+          process.env.NEXT_PUBLIC_SECRET || "",
+          {
+            expiresIn: "48h",
+          }
+        );
+        setUser({ ...user, token });
+      }
+    }
 
+    const handleWebSocketMessage = (event: MessageEvent) => {
+      try {
+        const { type, data } = JSON.parse(event.data);
+        if (type === 'new-game' || type === 'game-update') {
+          addOrUpdateGame(data);
+        }
+      } catch (error) {
+        console.error("Error processing WebSocket message:", error);
+      }
+    };
+
+    if (socket) {
+      socket.addEventListener('message', handleWebSocketMessage);
+    }
+
+    return () => {
+      if (socket) {
+        socket.removeEventListener('message', handleWebSocketMessage);
+      }
+    }
+  }, [socket, addOrUpdateGame, user, router, setUser])
+
+  useEffect(() => {
+    if (!user) {
+      router.push("/?modal=login")
+      return
+    }
+  }, [])
   const fetchGames = async () => {
     setIsLoading(true)
     try {
       const response = await axios.get('/api/game')
-      setGames(response.data.games.sort((a: Game, b: Game) => parseInt(b.gameId) - parseInt(a.gameId)))
+      setGames(response.data.games.sort((a: Game, b: Game) => new Date(b.lastBidTime).getTime() - new Date(a.lastBidTime).getTime()))
     } catch (error) {
       console.error('Error fetching games:', error)
     } finally {
@@ -41,72 +101,62 @@ export default function AllGames() {
     }
   }
 
-  const LiveIndicator = () => (
-    <div className="flex items-center">
-      <motion.div
-        className="w-2 h-2 bg-red-500 rounded-full mr-2"
-        animate={{ scale: [1, 1.2, 1] }}
-        transition={{ duration: 1.5, repeat: Infinity }}
-      />
-      <span className="text-xs font-semibold text-red-500">LIVE</span>
-    </div>
-  )
+  const handleCreateGame = (gameData: GameData) => {
+    sendMessage('create-game', gameData);
+  }
+
+  const handleOnClick = (gameStatus: boolean, gameId: number) => {
+    if (gameStatus) {
+      router.push(`/game/${gameId}`)
+    } else {
+      router.push(`/live/${gameId}`)
+    }
+  }
 
   return (
     <div className="container mx-auto py-8">
-      <div className='flex justify-between'>
-      <h1 className="text-3xl font-bold mb-6">Active Games</h1>
-      <CreateGameModal/>
+      <div className='flex justify-between mb-6'>
+        <h1 className="text-3xl font-bold">Active Games</h1>
+        <CreateGame onCreateGame={handleCreateGame} />
       </div>
       {isLoading ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="space-y-4 min-h-screen">
           {[...Array(6)].map((_, index) => (
-            <Skeleton key={index} className="h-48 bg-slate-900" />
+            <Skeleton key={index} className="h-12 w-full bg-slate-300" />
           ))}
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {games.map((game) => (
-            <Card
-              key={game.id}
-              className="hover:shadow-lg transition-shadow duration-300 cursor-pointer"
-              onClick={() => router.push(`/game/${game.gameId}`)}
-            >
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">
-                  Game #{game.gameId}
-                </CardTitle>
-                {!game.gameEnded && <LiveIndicator />}
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <p className="text-xs text-muted-foreground">Initial Bid</p>
-                    <p className="text-lg font-semibold">{game.initialBidAmount}</p>
-                  </div>
-                  <div>
-                    <p className="text-xs text-muted-foreground">Highest Bid</p>
-                    <p className="text-lg font-semibold">{game.highestBid}</p>
-                  </div>
-                  <div>
-                    <p className="text-xs text-muted-foreground">Total Bids</p>
-                    <p className="text-lg font-semibold">{game.totalBids}</p>
-                  </div>
-                  <div>
-                    <p className="text-xs text-muted-foreground">Prize Pool</p>
-                    <p className="text-lg font-semibold">{game.prizePool}</p>
-                  </div>
-                </div>
-                <div className="mt-4">
-                  <p className="text-xs text-muted-foreground">Last Bid</p>
-                  <p className="text-sm">
-                    {formatDistanceToNow(new Date(game.lastBidTime), { addSuffix: true })}
-                  </p>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
+        <Table>
+          <TableHeader>
+            <TableRow>
+              {/* <TableHead>Game ID</TableHead> */}
+              <TableHead>Initial Bid</TableHead>
+              <TableHead>Highest Bid</TableHead>
+              <TableHead>Total Prize</TableHead>
+              <TableHead>Total Bids</TableHead>
+              <TableHead>Last Bid</TableHead>
+              <TableHead>Status</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {games.map((game) => (
+              <TableRow key={game.id} onClick={() => handleOnClick(game.gameEnded, game.id)}
+                className='cursor-pointer hover:bg-slate-900'>
+                {/* <TableCell> {game.gameId}</TableCell> */}
+                <TableCell className='flex items-center'> <DollarSign size={12}/>{game.initialBidAmount}</TableCell>
+                <TableCell> <span className='flex items-center'><DollarSign size={12}/> {game.highestBid}</span>  </TableCell>
+                <TableCell  > <span className='flex items-center'><DollarSign size={12}/> {game.prizePool}</span></TableCell>
+                <TableCell>{game.totalBids}</TableCell>
+                <TableCell>{formatDistanceToNow(new Date(game.lastBidTime), { addSuffix: true })}</TableCell>
+                <TableCell>
+                  <Badge variant={game.gameEnded ? "secondary" : "default"}>
+                    {game.gameEnded ? "Ended" : "Active"}
+                  </Badge>
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
       )}
     </div>
   )

@@ -62,8 +62,31 @@ export async function POST(req: Request) {
         },
       }
     });
+
+    const gameData = await prisma.game.findUnique({
+      where:{
+        id: game.id,
+      },
+      include: {
+        players: {
+          include: {
+            bid: true,   
+            user:{
+              omit: {
+                email: true,
+                password: true,
+                provider: true,
+              },
+            }
+          },
+        },
+      },
+      omit: {
+        platformFeePercent: true,
+      }
+    })
     
-    return NextResponse.json({ message: 'Game created successfully', game }, { status: 200 });
+    return NextResponse.json({ message: 'Game created successfully', gameData }, { status: 200 });
   } catch (error) {
     console.error(error);
     return NextResponse.json({ message: 'Internal server error' }, { status: 500 });
